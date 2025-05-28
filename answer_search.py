@@ -9,10 +9,9 @@ from py2neo import Graph
 class AnswerSearcher:
     def __init__(self):
         self.g = Graph(
-            host="127.0.0.1",
-            http_port=7474,
-            user="lhy",
-            password="lhy123")
+            "bolt://localhost:7687",  # 使用 Bolt 协议连接
+            auth=("neo4j", "1584340372")    # 使用你的用户名和密码
+        )
         self.num_limit = 20
 
     '''执行cypher查询，并返回相应结果'''
