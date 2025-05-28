@@ -52,6 +52,8 @@ class QuestionClassifier:
         self.belong_qwds = ['属于什么科', '属于', '什么科', '科室']
         self.cure_qwds = ['治疗什么', '治啥', '治疗啥', '医治啥', '治愈啥', '主治啥', '主治什么', '有什么用', '有何用', '用处', '用途',
                           '有什么好处', '有什么益处', '有何益处', '用来', '用来做啥', '用来作甚', '需要', '要']
+        # 新增生产商相关的问题词
+        self.producer_qwds = ['生产商', '生产企业', '生产厂家', '药企', '制造商', '产商', '厂商', '哪里产的', '谁生产的', '哪个公司']
 
         print('model init finished ......')
 
@@ -116,6 +118,11 @@ class QuestionClassifier:
         # 药品治啥病
         if self.check_words(self.cure_qwds, question) and 'drug' in types:
             question_type = 'drug_disease'
+            question_types.append(question_type)
+
+        # 新增：查询药品的生产商
+        if self.check_words(self.producer_qwds, question) and 'drug' in types:
+            question_type = 'drug_producer'
             question_types.append(question_type)
 
         # 疾病接受检查项目

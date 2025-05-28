@@ -128,6 +128,17 @@ class AnswerSearcher:
             subject = answers[0]['n.name']
             final_answer = '通常可以通过{0}检查出来的疾病有{1}'.format(subject, '；'.join(list(set(desc))[:self.num_limit]))
 
+        # 查询药品的生产商
+        elif question_type == 'drug_producer':
+            if not answers:
+                return '未找到该药品的生产商信息'
+            desc = [i['p.name'] for i in answers]  # 获取所有生产商名称
+            subject = answers[0]['d.name']  # 获取药品名称
+            final_answer = '{0}的生产商包括：{1}'.format(
+                subject, 
+                '；'.join(list(set(desc))[:self.num_limit])  # 去重并限制数量
+            )
+
         return final_answer
 
 
