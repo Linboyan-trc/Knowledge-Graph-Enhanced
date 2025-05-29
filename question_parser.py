@@ -29,25 +29,25 @@ class QuestionPaser:
             sql_['question_type'] = question_type
             sql = []
             if question_type == 'disease_symptom':
-                sql = self.sql_transfer(question_type, entity_dict.get('disease'))
+                sql = self.sql_transfer(question_type, entity_dict.get('disease'), entity_dict)
 
             elif question_type == 'symptom_disease':
-                sql = self.sql_transfer(question_type, entity_dict.get('symptom'))
+                sql = self.sql_transfer(question_type, entity_dict.get('symptom'), entity_dict)
 
             elif question_type == 'disease_cause':
-                sql = self.sql_transfer(question_type, entity_dict.get('disease'))
+                sql = self.sql_transfer(question_type, entity_dict.get('disease'), entity_dict)
 
             elif question_type == 'disease_acompany':
-                sql = self.sql_transfer(question_type, entity_dict.get('disease'))
+                sql = self.sql_transfer(question_type, entity_dict.get('disease'), entity_dict)
 
             elif question_type == 'disease_not_food':
-                sql = self.sql_transfer(question_type, entity_dict.get('disease'))
+                sql = self.sql_transfer(question_type, entity_dict.get('disease'), entity_dict)
 
             elif question_type == 'disease_do_food':
-                sql = self.sql_transfer(question_type, entity_dict.get('disease'))
+                sql = self.sql_transfer(question_type, entity_dict.get('disease'), entity_dict)
 
             elif question_type == 'food_not_disease':
-                sql = self.sql_transfer(question_type, entity_dict.get('food'))
+                sql = self.sql_transfer(question_type, entity_dict.get('food'), entity_dict)
 
             elif question_type == 'food_do_disease':
                 sql = self.sql_transfer(question_type, entity_dict.get('food'))
@@ -94,12 +94,14 @@ class QuestionPaser:
         return sqls
 
     '''针对不同的问题，分开进行处理'''
-    def sql_transfer(self, question_type, entities):
+    def sql_transfer(self, question_type, entities, entity_dict=None):
         if not entities:
             return []
 
         # 查询语句
         sql = []
+        if entity_dict is None:
+            entity_dict = {}
         # 查询疾病的原因
         if question_type == 'disease_cause':
             sql = ["MATCH (m:Disease) where m.name = '{0}' return m.name, m.cause".format(i) for i in entities]
@@ -153,7 +155,15 @@ class QuestionPaser:
 
         # 已知忌口查疾病
         elif question_type == 'food_not_disease':
-            sql = ["MATCH (m:Disease)-[r:no_eat]->(n:Food) where n.name = '{0}' return m.name, r.name, n.name".format(i) for i in entities]
+            sql = []
+            for food in entities:
+                if 'disease' in entity_dict and entity_dict['disease']:
+                    # 如果问题中提到了特定疾病，只返回该疾病的食物禁忌
+                    for disease in entity_dict['disease']:
+                        sql.append("MATCH (m:Disease)-[r:no_eat]->(n:Food) WHERE n.name = '{0}' AND m.name = '{1}' RETURN m.name, r.name, n.name".format(food, disease))
+                else:
+                    # 否则返回所有禁忌该食物的疾病
+                    sql.append("MATCH (m:Disease)-[r:no_eat]->(n:Food) WHERE n.name = '{0}' RETURN m.name, r.name, n.name".format(food))
 
         # 已知推荐查疾病
         elif question_type == 'food_do_disease':

@@ -90,7 +90,10 @@ class AnswerSearcher:
         elif question_type == 'disease_not_food':
             desc = [i['n.name'] for i in answers]
             subject = answers[0]['m.name']
-            final_answer = '{0}忌食的食物包括有：{1}'.format(subject, '；'.join(list(set(desc))[:self.num_limit]))
+            if len(desc) > 0:
+                final_answer = '患有{0}期间，建议不要食用：{1}'.format(subject, '；'.join(list(set(desc))[:self.num_limit]))
+            else:
+                final_answer = '没有查询到{0}的相关饮食禁忌信息。'.format(subject)
 
         elif question_type == 'disease_do_food':
             do_desc = [i['n.name'] for i in answers if i['r.name'] == '宜吃']
@@ -101,7 +104,10 @@ class AnswerSearcher:
         elif question_type == 'food_not_disease':
             desc = [i['m.name'] for i in answers]
             subject = answers[0]['n.name']
-            final_answer = '患有{0}的人最好不要吃{1}'.format('；'.join(list(set(desc))[:self.num_limit]), subject)
+            if len(desc) > 0:
+                final_answer = '患有以下疾病的人最好不要食用{0}：{1}'.format(subject, '；'.join(list(set(desc))[:self.num_limit]))
+            else:
+                final_answer = '未发现{0}的相关禁忌信息，可以适量食用。'.format(subject)
 
         elif question_type == 'food_do_disease':
             desc = [i['m.name'] for i in answers]
