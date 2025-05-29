@@ -55,6 +55,8 @@ class QuestionClassifier:
                           '有什么好处', '有什么益处', '有何益处', '用来', '用来做啥', '用来作甚', '需要', '要']
         # 新增生产商相关的问题词
         self.producer_qwds = ['生产商', '生产企业', '生产厂家', '药企', '制造商', '产商', '厂商', '哪里产的', '谁生产的', '哪个公司']
+        # 新增比较相关的问题词
+        self.compare_qwds = ['比较', '相比', '更多', '更少', '哪个多', '哪个少', '多还是少']
 
         print('model init finished ......')
 
@@ -127,7 +129,11 @@ class QuestionClassifier:
 
         # 新增：查询药品的生产商
         if self.check_words(self.producer_qwds, question) and 'drug' in types:
-            question_type = 'drug_producer'
+            # 如果包含比较词且至少有两个药品，则为比较问题
+            if self.check_words(self.compare_qwds, question) and len([t for t in types if t == 'drug']) >= 2:
+                question_type = 'drug_producer_compare'
+            else:
+                question_type = 'drug_producer'
             question_types.append(question_type)
 
         # 疾病接受检查项目

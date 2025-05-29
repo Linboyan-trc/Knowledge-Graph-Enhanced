@@ -62,7 +62,7 @@ class QuestionPaser:
                 sql = self.sql_transfer(question_type, entity_dict.get('drug'))
 
             # 查询药品的生产商
-            elif question_type == 'drug_producer':
+            elif question_type == 'drug_producer' or question_type == 'drug_producer_compare':
                 sql = self.sql_transfer(question_type, entity_dict.get('drug'))
 
             elif question_type == 'disease_check':
@@ -203,6 +203,10 @@ class QuestionPaser:
         # 查询药品的生产商
         elif question_type == 'drug_producer':
             sql = ["MATCH (p:Producer)-[r:drugs_of]->(d:Drug) WHERE d.name = '{0}' RETURN d.name, p.name".format(i) for i in entities]
+
+        # 比较药品的生产商数量
+        elif question_type == 'drug_producer_compare':
+            sql = ["MATCH (p:Producer)-[r:drugs_of]->(d:Drug) WHERE d.name = '{0}' RETURN d.name, count(p) as producer_count".format(i) for i in entities]
 
         return sql
 

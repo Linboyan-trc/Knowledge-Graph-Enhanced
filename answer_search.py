@@ -164,14 +164,38 @@ class AnswerSearcher:
 
         # 查询药品的生产商
         elif question_type == 'drug_producer':
-            if not answers:
-                return '未找到该药品的生产商信息'
-            desc = [i['p.name'] for i in answers]  # 获取所有生产商名称
-            subject = answers[0]['d.name']  # 获取药品名称
-            final_answer = '{0}的生产商包括：{1}'.format(
-                subject, 
-                '；'.join(list(set(desc))[:self.num_limit])  # 去重并限制数量
-            )
+            desc = [i['p.name'] for i in answers]
+            subject = answers[0]['d.name']
+            final_answer = '{0}的生产商包括：{1}'.format(subject, '；'.join(list(set(desc))[:self.num_limit]))
+
+        elif question_type == 'drug_producer_compare':
+            # 收集每个药品的生产商数量
+            drug_producers = {}
+            for answer in answers:
+                drug_name = answer['d.name']
+                producer_count = answer['producer_count']
+                drug_producers[drug_name] = producer_count
+            
+            # 比较生产商数量
+            drugs = list(drug_producers.keys())
+            if len(drugs) >= 2:
+                drug1, drug2 = drugs[0], drugs[1]
+                count1, count2 = drug_producers[drug1], drug_producers[drug2]
+                
+                if count1 > count2:
+                    final_answer = '{0}的生产商数量为{1}家，比{2}的{3}家要多。'.format(
+                        drug1, count1, drug2, count2
+                    )
+                elif count1 < count2:
+                    final_answer = '{0}的生产商数量为{1}家，比{2}的{3}家要少。'.format(
+                        drug1, count1, drug2, count2
+                    )
+                else:
+                    final_answer = '{0}和{1}的生产商数量都是{2}家。'.format(
+                        drug1, drug2, count1
+                    )
+            else:
+                final_answer = '抱歉，无法获取完整的比较信息。'
 
         return final_answer
 
