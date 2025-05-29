@@ -108,6 +108,34 @@ class AnswerSearcher:
                 final_answer = '患有以下疾病的人最好不要食用{0}：{1}'.format(subject, '；'.join(list(set(desc))[:self.num_limit]))
             else:
                 final_answer = '未发现{0}的相关禁忌信息，可以适量食用。'.format(subject)
+                
+        elif question_type == 'food_compare_diseases':
+            if len(answers) < 2:
+                return '抱歉，无法比较这些食物的禁忌疾病数量。'
+            results = {}
+            for answer in answers:
+                food = answer['food']
+                count = answer['disease_count']
+                diseases = answer['diseases']
+                results[food] = {'count': count, 'diseases': diseases}
+            
+            foods = list(results.keys())
+            if len(foods) == 2:
+                food1, food2 = foods
+                count1, count2 = results[food1]['count'], results[food2]['count']
+                if count1 > count2:
+                    final_answer = '需要忌吃{0}的病症更多，有{1}种疾病；而需要忌吃{2}的病症有{3}种。'.format(
+                        food1, count1, food2, count2
+                    )
+                elif count2 > count1:
+                    final_answer = '需要忌吃{0}的病症更多，有{1}种疾病；而需要忌吃{2}的病症有{3}种。'.format(
+                        food2, count2, food1, count1
+                    )
+                else:
+                    final_answer = '{0}和{1}的禁忌疾病数量相同，都是{2}种。'.format(food1, food2, count1)
+            else:
+                counts = ['{0}({1}种)'.format(f, results[f]['count']) for f in results]
+                final_answer = '各食物的禁忌疾病数量比较：' + '；'.join(counts)
 
         elif question_type == 'food_do_disease':
             desc = [i['m.name'] for i in answers]

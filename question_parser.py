@@ -49,6 +49,9 @@ class QuestionPaser:
             elif question_type == 'food_not_disease':
                 sql = self.sql_transfer(question_type, entity_dict.get('food'), entity_dict)
 
+            elif question_type == 'food_compare_diseases':
+                sql = self.sql_transfer(question_type, entity_dict.get('food'), entity_dict)
+
             elif question_type == 'food_do_disease':
                 sql = self.sql_transfer(question_type, entity_dict.get('food'))
 
@@ -164,6 +167,13 @@ class QuestionPaser:
                 else:
                     # 否则返回所有禁忌该食物的疾病
                     sql.append("MATCH (m:Disease)-[r:no_eat]->(n:Food) WHERE n.name = '{0}' RETURN m.name, r.name, n.name".format(food))
+                    
+        # 比较两种食物的禁忌疾病数量
+        elif question_type == 'food_compare_diseases':
+            sql = []
+            # 对每种食物分别查询其禁忌疾病
+            for food in entities:
+                sql.append("MATCH (m:Disease)-[r:no_eat]->(n:Food) WHERE n.name = '{0}' RETURN n.name as food, count(m) as disease_count, collect(m.name) as diseases".format(food))
 
         # 已知推荐查疾病
         elif question_type == 'food_do_disease':
