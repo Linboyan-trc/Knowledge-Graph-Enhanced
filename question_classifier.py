@@ -37,7 +37,8 @@ class QuestionClassifier:
         self.symptom_qwds = ['症状', '表征', '现象', '症候', '表现']
         self.cause_qwds = ['原因','成因', '为什么', '怎么会', '怎样才', '咋样才', '怎样会', '如何会', '为啥', '为何', '如何才会', '怎么才会', '会导致', '会造成']
         self.acompany_qwds = ['并发症', '并发', '一起发生', '一并发生', '一起出现', '一并出现', '一同发生', '一同出现', '伴随发生', '伴随', '共现']
-        self.food_qwds = ['饮食', '饮用', '吃', '食', '伙食', '膳食', '喝', '菜' ,'忌口', '补品', '保健品', '食谱', '菜谱', '食用', '食物','补品', '能否吃', '可以吃', '能吃']
+        self.food_qwds = ['饮食', '饮用', '吃', '食', '伙食', '膳食', '喝', '菜' ,'忌口', '补品', '保健品', '食谱', '菜谱', '食用', '食物','补品', '能否吃', '可以吃', '能吃', '适合吃', '能否食用', '可以食用', '能食用', '适合食用']
+        self.food_deny_qwds = ['不能吃', '不可以吃', '不适合吃', '禁止吃', '忌讳', '忌口', '不要吃', '不适宜', '不宜', '不可以', '不能', '别吃', '勿食']
         self.food_compare_qwds = ['多还是', '和', '比较', '相比', '更多', '更少', '哪个多', '哪个少']
         self.drug_qwds = ['药', '药品', '用药', '胶囊', '口服液', '炎片']
         self.prevent_qwds = ['预防', '防范', '抵制', '抵御', '防止','躲避','逃避','避开','免得','逃开','避开','避掉','躲开','躲掉','绕开',
@@ -104,18 +105,28 @@ class QuestionClassifier:
                 question_type = 'disease_do_food'
             question_types.append(question_type)
 
-        #已知食物找疾病
-        if self.check_words(self.food_qwds+self.cure_qwds, question) and 'food' in types:
-            # 检查是否是比较两种食物的问题
-            if self.check_words(self.food_compare_qwds, question) and len([t for t in types if t == 'food']) >= 2:
-                question_type = 'food_compare_diseases'
-            else:
-                deny_status = self.check_words(self.deny_words, question)
+        #已知食物找疾病或已知疾病查询食物
+        if (self.check_words(self.food_qwds, question) or self.check_words(self.food_deny_qwds, question)):
+            # 同时包含疾病和食物
+            if 'disease' in types and 'food' in types:
+                deny_status = self.check_words(self.food_deny_qwds, question) or self.check_words(self.deny_words, question)
                 if deny_status:
-                    question_type = 'food_not_disease'
+                    question_type = 'disease_not_food'
                 else:
-                    question_type = 'food_do_disease'
-            question_types.append(question_type)
+                    question_type = 'disease_do_food'
+                question_types.append(question_type)
+            # 只包含食物
+            elif 'food' in types:
+                # 检查是否是比较两种食物的问题
+                if self.check_words(self.food_compare_qwds, question) and len([t for t in types if t == 'food']) >= 2:
+                    question_type = 'food_compare_diseases'
+                else:
+                    deny_status = self.check_words(self.deny_words, question)
+                    if deny_status:
+                        question_type = 'food_not_disease'
+                    else:
+                        question_type = 'food_do_disease'
+                question_types.append(question_type)
 
         # 推荐药品
         if self.check_words(self.drug_qwds, question) and 'disease' in types:

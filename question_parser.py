@@ -148,13 +148,32 @@ class QuestionPaser:
             sql = sql1 + sql2
         # 查询疾病的忌口
         elif question_type == 'disease_not_food':
-            sql = ["MATCH (m:Disease)-[r:no_eat]->(n:Food) where m.name = '{0}' return m.name, r.name, n.name".format(i) for i in entities]
+            # 如果同时有疾病和食物
+            if 'food' in entity_dict and entity_dict['food']:
+                sql = []
+                for disease in entities:
+                    for food in entity_dict['food']:
+                        # 直接查询特定疾病和食物的关系
+                        sql.append("MATCH (m:Disease)-[r:no_eat]->(n:Food) WHERE m.name = '{0}' AND n.name = '{1}' RETURN m.name, r.name, n.name".format(disease, food))
+            else:
+                # 查询所有忌口
+                sql = ["MATCH (m:Disease)-[r:no_eat]->(n:Food) WHERE m.name = '{0}' RETURN m.name, r.name, n.name".format(i) for i in entities]
 
         # 查询疾病建议吃的东西
         elif question_type == 'disease_do_food':
-            sql1 = ["MATCH (m:Disease)-[r:do_eat]->(n:Food) where m.name = '{0}' return m.name, r.name, n.name".format(i) for i in entities]
-            sql2 = ["MATCH (m:Disease)-[r:recommand_eat]->(n:Food) where m.name = '{0}' return m.name, r.name, n.name".format(i) for i in entities]
-            sql = sql1 + sql2
+            # 如果同时有疾病和食物
+            if 'food' in entity_dict and entity_dict['food']:
+                sql = []
+                for disease in entities:
+                    for food in entity_dict['food']:
+                        # 分别查询推荐和宜吃的关系
+                        sql.append("MATCH (m:Disease)-[r:do_eat]->(n:Food) WHERE m.name = '{0}' AND n.name = '{1}' RETURN m.name, r.name, n.name".format(disease, food))
+                        sql.append("MATCH (m:Disease)-[r:recommand_eat]->(n:Food) WHERE m.name = '{0}' AND n.name = '{1}' RETURN m.name, r.name, n.name".format(disease, food))
+            else:
+                # 查询所有推荐食物
+                sql1 = ["MATCH (m:Disease)-[r:do_eat]->(n:Food) WHERE m.name = '{0}' RETURN m.name, r.name, n.name".format(i) for i in entities]
+                sql2 = ["MATCH (m:Disease)-[r:recommand_eat]->(n:Food) WHERE m.name = '{0}' RETURN m.name, r.name, n.name".format(i) for i in entities]
+                sql = sql1 + sql2
 
         # 已知忌口查疾病
         elif question_type == 'food_not_disease':

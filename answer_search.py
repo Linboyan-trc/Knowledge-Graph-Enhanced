@@ -93,7 +93,7 @@ class AnswerSearcher:
             if len(desc) > 0:
                 final_answer = '患有{0}期间，建议不要食用：{1}'.format(subject, '；'.join(list(set(desc))[:self.num_limit]))
             else:
-                final_answer = '没有查询到{0}的相关饮食禁忌信息。'.format(subject)
+                final_answer = '没有查询到{0}的相关饮食禁忌信息，建议请教医生意见。'.format(subject)
 
         elif question_type == 'disease_do_food':
             do_desc = [i['n.name'] for i in answers if i['r.name'] == '宜吃']
