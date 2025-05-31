@@ -53,6 +53,10 @@ class QuestionClassifier:
         self.belong_qwds = ['属于什么科', '属于', '什么科', '科室']
         self.cure_qwds = ['治疗什么', '治啥', '治疗啥', '医治啥', '治愈啥', '主治啥', '主治什么', '有什么用', '有何用', '用处', '用途','有什么好处', '有什么益处', '有何益处', '用来', '用来做啥', '用来作甚', '需要', '要']
         
+        # 4.4 
+        # 4.4.2 question2: 新增生产商相关的问题词
+        self.producer_qwds = ['生产商', '生产企业', '生产厂家', '药企', '制造商', '产商', '厂商', '哪里产的', '谁生产的', '哪个公司']
+
         # 5. 返回
         print('model init finished ......')
         return
@@ -90,7 +94,7 @@ class QuestionClassifier:
         if self.check_words(self.cause_qwds, question) and ('disease' in types):
             question_type = 'disease_cause'
             question_types.append(question_type)
-            
+
         # 并发症
         if self.check_words(self.acompany_qwds, question) and ('disease' in types):
             question_type = 'disease_acompany'
@@ -157,6 +161,11 @@ class QuestionClassifier:
         # 疾病易感染人群
         if self.check_words(self.easyget_qwds, question) and 'disease' in types :
             question_type = 'disease_easyget'
+            question_types.append(question_type)
+
+        # 5.2 question2: 新增查询药品的生产商
+        if self.check_words(self.producer_qwds, question) and 'drug' in types:
+            question_type = 'drug_producer'
             question_types.append(question_type)
 
         # 若没有查到相关的外部查询信息，那么则将该疾病的描述信息返回
