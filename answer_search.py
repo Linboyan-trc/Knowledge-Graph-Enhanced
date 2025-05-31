@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-# coding: utf-8
-# File: answer_search.py
-# Author: lhy<lhy_in_blcu@126.com,https://huangyong.github.io>
-# Date: 18-10-5
-
 from py2neo import Graph
 
 class AnswerSearcher:
@@ -13,20 +7,35 @@ class AnswerSearcher:
 
     '''执行cypher查询，并返回相应结果'''
     def search_main(self, sqls):
+        # 1. 最终回答
         final_answers = []
+
+        # 2. 遍历每个问题类型对应的多条查询语句
         for sql_ in sqls:
+            # 2.1 获取当前问题类型
             question_type = sql_['question_type']
+
+            # 2.2 获取当前对应的多条查询语句
             queries = sql_['sql']
+
+            # 2.3 存储查询结果
             answers = []
+
+            # 2.4 遍历每个查询语句
             for query in queries:
                 ress = self.g.run(query).data()
                 answers += ress
+
+            # 2.5 根据问题类型，和多条查询语句的多个查询结果，组成当前问题类型的最终回答
             final_answer = self.answer_prettify(question_type, answers)
+
+            # 2.6 当前问题类型回答不为空，加入最终回答列表
             if final_answer:
                 final_answers.append(final_answer)
+
+        # 3. 返回最终回答列表
         return final_answers
 
-    '''根据对应的qustion_type，调用相应的回复模板'''
     def answer_prettify(self, question_type, answers):
         final_answer = []
         if not answers:

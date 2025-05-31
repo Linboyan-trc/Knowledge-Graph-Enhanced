@@ -1,77 +1,82 @@
-#!/usr/bin/env python3
-# coding: utf-8
-# File: question_classifier.py
-# Author: lhy<lhy_in_blcu@126.com,https://huangyong.github.io>
-# Date: 18-10-4
-
 import os
 import ahocorasick
 
 class QuestionClassifier:
     def __init__(self):
+        # 1. disease + symptom + check
+        # 2. food + drug + producer + department
+        # 3. deny
         cur_dir = '/'.join(os.path.abspath(__file__).split('/')[:-1])
-        #　特征词路径
         self.disease_path = os.path.join(cur_dir, 'dict/disease.txt')
-        self.department_path = os.path.join(cur_dir, 'dict/department.txt')
-        self.check_path = os.path.join(cur_dir, 'dict/check.txt')
-        self.drug_path = os.path.join(cur_dir, 'dict/drug.txt')
-        self.food_path = os.path.join(cur_dir, 'dict/food.txt')
-        self.producer_path = os.path.join(cur_dir, 'dict/producer.txt')
         self.symptom_path = os.path.join(cur_dir, 'dict/symptom.txt')
+        self.check_path = os.path.join(cur_dir, 'dict/check.txt')
+        self.food_path = os.path.join(cur_dir, 'dict/food.txt')
+        self.drug_path = os.path.join(cur_dir, 'dict/drug.txt')
+        self.producer_path = os.path.join(cur_dir, 'dict/producer.txt')
+        self.department_path = os.path.join(cur_dir, 'dict/department.txt')
         self.deny_path = os.path.join(cur_dir, 'dict/deny.txt')
-        # 加载特征词
+
+        # 2. 词条列表
+        # 2.1 region_words具有所有词条
         self.disease_wds= [i.strip() for i in open(self.disease_path) if i.strip()]
-        self.department_wds= [i.strip() for i in open(self.department_path) if i.strip()]
-        self.check_wds= [i.strip() for i in open(self.check_path) if i.strip()]
-        self.drug_wds= [i.strip() for i in open(self.drug_path) if i.strip()]
-        self.food_wds= [i.strip() for i in open(self.food_path) if i.strip()]
-        self.producer_wds= [i.strip() for i in open(self.producer_path) if i.strip()]
         self.symptom_wds= [i.strip() for i in open(self.symptom_path) if i.strip()]
-        self.region_words = set(self.department_wds + self.disease_wds + self.check_wds + self.drug_wds + self.food_wds + self.producer_wds + self.symptom_wds)
+        self.check_wds= [i.strip() for i in open(self.check_path) if i.strip()]
+        self.food_wds= [i.strip() for i in open(self.food_path) if i.strip()]
+        self.drug_wds= [i.strip() for i in open(self.drug_path) if i.strip()]
+        self.producer_wds= [i.strip() for i in open(self.producer_path) if i.strip()]
+        self.department_wds= [i.strip() for i in open(self.department_path) if i.strip()]
         self.deny_words = [i.strip() for i in open(self.deny_path) if i.strip()]
-        # 构造领域actree
-        self.region_tree = self.build_actree(list(self.region_words))
-        # 构建词典
+        self.region_words = set(self.department_wds + self.disease_wds + self.check_wds + self.drug_wds + self.food_wds + self.producer_wds + self.symptom_wds)
+        
+        # 3. 构建词典: 词 -> 类型
+        # 3. 构造领域actree: 从问句中找关键词
         self.wdtype_dict = self.build_wdtype_dict()
-        # 问句疑问词
-        self.symptom_qwds = ['症状', '表征', '现象', '症候', '表现']
+        self.region_tree = self.build_actree(list(self.region_words))
+        
+        # 4. 问句疑问词
+        # 4.1 disease attribution
         self.cause_qwds = ['原因','成因', '为什么', '怎么会', '怎样才', '咋样才', '怎样会', '如何会', '为啥', '为何', '如何才会', '怎么才会', '会导致', '会造成']
-        self.acompany_qwds = ['并发症', '并发', '一起发生', '一并发生', '一起出现', '一并出现', '一同发生', '一同出现', '伴随发生', '伴随', '共现']
+        self.prevent_qwds = ['预防', '防范', '抵制', '抵御', '防止','躲避','逃避','避开','免得','逃开','避开','避掉','躲开','躲掉','绕开','怎样才能不', '怎么才能不', '咋样才能不','咋才能不', '如何才能不','怎样才不', '怎么才不', '咋样才不','咋才不', '如何才不','怎样才可以不', '怎么才可以不', '咋样才可以不', '咋才可以不', '如何可以不','怎样才可不', '怎么才可不', '咋样才可不', '咋才可不', '如何可不']
+        self.easyget_qwds = ['易感人群', '容易感染', '易发人群', '什么人', '哪些人', '感染', '染上', '得上']
+        self.lasttime_qwds = ['周期', '多久', '多长时间', '多少时间', '几天', '几年', '多少天', '多少小时', '几个小时', '多少年']
+        self.cureprob_qwds = ['多大概率能治好', '多大几率能治好', '治好希望大么', '几率', '几成', '比例', '可能性', '能治', '可治', '可以治', '可以医']
+        self.cureway_qwds = ['怎么治疗', '如何医治', '怎么医治', '怎么治', '怎么医', '如何治', '医治方式', '疗法', '咋治', '怎么办', '咋办', '咋治']
+
+        # 4.2 kinds
+        self.symptom_qwds = ['症状', '表征', '现象', '症候', '表现']
+        self.check_qwds = ['检查', '检查项目', '查出', '检查', '测出', '试出']
         self.food_qwds = ['饮食', '饮用', '吃', '食', '伙食', '膳食', '喝', '菜' ,'忌口', '补品', '保健品', '食谱', '菜谱', '食用', '食物','补品']
         self.drug_qwds = ['药', '药品', '用药', '胶囊', '口服液', '炎片']
-        self.prevent_qwds = ['预防', '防范', '抵制', '抵御', '防止','躲避','逃避','避开','免得','逃开','避开','避掉','躲开','躲掉','绕开',
-                             '怎样才能不', '怎么才能不', '咋样才能不','咋才能不', '如何才能不',
-                             '怎样才不', '怎么才不', '咋样才不','咋才不', '如何才不',
-                             '怎样才可以不', '怎么才可以不', '咋样才可以不', '咋才可以不', '如何可以不',
-                             '怎样才可不', '怎么才可不', '咋样才可不', '咋才可不', '如何可不']
-        self.lasttime_qwds = ['周期', '多久', '多长时间', '多少时间', '几天', '几年', '多少天', '多少小时', '几个小时', '多少年']
-        self.cureway_qwds = ['怎么治疗', '如何医治', '怎么医治', '怎么治', '怎么医', '如何治', '医治方式', '疗法', '咋治', '怎么办', '咋办', '咋治']
-        self.cureprob_qwds = ['多大概率能治好', '多大几率能治好', '治好希望大么', '几率', '几成', '比例', '可能性', '能治', '可治', '可以治', '可以医']
-        self.easyget_qwds = ['易感人群', '容易感染', '易发人群', '什么人', '哪些人', '感染', '染上', '得上']
-        self.check_qwds = ['检查', '检查项目', '查出', '检查', '测出', '试出']
+        
+        # 4.3 addition
+        self.acompany_qwds = ['并发症', '并发', '一起发生', '一并发生', '一起出现', '一并出现', '一同发生', '一同出现', '伴随发生', '伴随', '共现']
         self.belong_qwds = ['属于什么科', '属于', '什么科', '科室']
-        self.cure_qwds = ['治疗什么', '治啥', '治疗啥', '医治啥', '治愈啥', '主治啥', '主治什么', '有什么用', '有何用', '用处', '用途',
-                          '有什么好处', '有什么益处', '有何益处', '用来', '用来做啥', '用来作甚', '需要', '要']
-
+        self.cure_qwds = ['治疗什么', '治啥', '治疗啥', '医治啥', '治愈啥', '主治啥', '主治什么', '有什么用', '有何用', '用处', '用途','有什么好处', '有什么益处', '有何益处', '用来', '用来做啥', '用来作甚', '需要', '要']
+        
+        # 5. 返回
         print('model init finished ......')
-
         return
 
-    '''分类主函数'''
     def classify(self, question):
+        # 1. 获取{词条 -> 类型}，一定能获取到词条
         data = {}
         medical_dict = self.check_medical(question)
         if not medical_dict:
             return {}
+        
+        # 2. {词条 -> 类型}注入
         data['args'] = medical_dict
-        #收集问句当中所涉及到的实体类型
+
+        # 3. 获取词条对应的类型
         types = []
         for type_ in medical_dict.values():
             types += type_
-        question_type = 'others'
 
+        # 4. 设置问题类型
+        question_type = 'others'
         question_types = []
 
+        # 5. 分支判断，得到此问题所属于的所有问题类型
         # 症状
         if self.check_words(self.symptom_qwds, question) and ('disease' in types):
             question_type = 'disease_symptom'
@@ -85,6 +90,7 @@ class QuestionClassifier:
         if self.check_words(self.cause_qwds, question) and ('disease' in types):
             question_type = 'disease_cause'
             question_types.append(question_type)
+            
         # 并发症
         if self.check_words(self.acompany_qwds, question) and ('disease' in types):
             question_type = 'disease_acompany'

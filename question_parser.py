@@ -1,12 +1,4 @@
-#!/usr/bin/env python3
-# coding: utf-8
-# File: question_parser.py
-# Author: lhy<lhy_in_blcu@126.com,https://huangyong.github.io>
-# Date: 18-10-4
-
 class QuestionPaser:
-
-    '''构建实体节点'''
     def build_entitydict(self, args):
         entity_dict = {}
         for arg, types in args.items():
@@ -18,12 +10,19 @@ class QuestionPaser:
 
         return entity_dict
 
-    '''解析主函数'''
     def parser_main(self, res_classify):
+        # 1. 获取词条 -> 类型
+        # 1. 转为类型 -> [词条]
         args = res_classify['args']
         entity_dict = self.build_entitydict(args)
+
+        # 2. 获取此问题对应的所有问题类型
         question_types = res_classify['question_types']
+
+        # 3. 要执行的sqls查询
         sqls = []
+
+        # 4. 遍历每个问题类型，一个问题类型可以对应多条查询语句
         for question_type in question_types:
             sql_ = {}
             sql_['question_type'] = question_type
@@ -87,20 +86,28 @@ class QuestionPaser:
 
                 sqls.append(sql_)
 
+        # 5. 返回查询语句
         return sqls
 
-    '''针对不同的问题，分开进行处理'''
     def sql_transfer(self, question_type, entities):
+        # 1. 必须要有词条
         if not entities:
             return []
 
-        # 查询语句
+        # 2. 构造一个问题类型对应的多条查询语句
         sql = []
-        # 查询疾病的原因
+
+        # 3. 成因
+        # 1. 限定节点类型: MATCH (m:Disease)
+        # 2. 指定节点属性: where m.name = '{词条}' 
+        # 3. 返回属性: return m.name, m.cause
         if question_type == 'disease_cause':
             sql = ["MATCH (m:Disease) where m.name = '{0}' return m.name, m.cause".format(i) for i in entities]
 
-        # 查询疾病的防御措施
+        # 4. 预防
+        # 1. 限定节点类型: MATCH (m:Disease) 
+        # 2. 指定节点属性: where m.name = '{词条}' 
+        # 3. 返回属性: return m.name, m.prevent
         elif question_type == 'disease_prevent':
             sql = ["MATCH (m:Disease) where m.name = '{0}' return m.name, m.prevent".format(i) for i in entities]
 
@@ -124,7 +131,12 @@ class QuestionPaser:
         elif question_type == 'disease_desc':
             sql = ["MATCH (m:Disease) where m.name = '{0}' return m.name, m.desc".format(i) for i in entities]
 
-        # 查询疾病有哪些症状
+        # 6. 症状
+        # 1. 限定根节点类型: MATCH (m:Disease)
+        # 2. 限定关系类型: -[r:has_symptom]->
+        # 3. 限定相邻节点类型: (n:Symptom) 
+        # 4. 指定根节点属性: where m.name = '{词条}' 
+        # 5. 返回: return m.name, r.name, n.name
         elif question_type == 'disease_symptom':
             sql = ["MATCH (m:Disease)-[r:has_symptom]->(n:Symptom) where m.name = '{0}' return m.name, r.name, n.name".format(i) for i in entities]
 
@@ -177,7 +189,6 @@ class QuestionPaser:
             sql = ["MATCH (m:Disease)-[r:need_check]->(n:Check) where n.name = '{0}' return m.name, r.name, n.name".format(i) for i in entities]
 
         return sql
-
 
 
 if __name__ == '__main__':

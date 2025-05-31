@@ -1,14 +1,7 @@
-#!/usr/bin/env python3
-# coding: utf-8
-# File: chatbot_graph.py
-# Author: lhy<lhy_in_blcu@126.com,https://huangyong.github.io>
-# Date: 18-10-4
-
 from question_classifier import *
 from question_parser import *
 from answer_search import *
 
-'''问答类'''
 class ChatBotGraph:
     # 1. 初始化Add commentMore actions
     # 1.1 创建分类器、解析器和检索器
@@ -34,6 +27,7 @@ class ChatBotGraph:
             return answer
         else:
             return '\n'.join(final_answers)
+
 
 if __name__ == '__main__':
     handler = ChatBotGraph()
