@@ -157,6 +157,10 @@ class AnswerSearcher:
             subject = answers[0]['m.name']
             final_answer = '{0}通常可以通过以下方式检查出来：{1}'.format(subject, '；'.join(list(set(desc))[:self.num_limit]))
 
+        elif question_type == 'easyget_disease_check':
+            checks =[i['check_name'] for i in answers]
+            final_answer = '需要做以下检查：{0}'.format("，".join(list(set(checks))[:self.num_limit]))
+
         elif question_type == 'check_disease':
             desc = [i['m.name'] for i in answers]
             subject = answers[0]['n.name']

@@ -66,7 +66,22 @@ class QuestionPaser:
                 sql = self.sql_transfer(question_type, entity_dict.get('drug'))
 
             elif question_type == 'disease_check':
-                sql = self.sql_transfer(question_type, entity_dict.get('disease'))
+                # 针对特定人群的检查
+                if 'easyget_disease_check' in question_types:
+                    # 获取高危人群可能患上的疾病及其检查
+                    sql_["question_type"] = "easyget_disease_check"
+                    sql = []
+                    for disease in entity_dict.get('disease', []):
+                        # 构造嵌套查询
+                        sql.append("""
+                            MATCH (d1:Disease) 
+                            WHERE d1.easy_get contains '{0}'
+                            WITH d1
+                            MATCH (d1) -[r:need_check]-> (n:Check) 
+                            RETURN DISTINCT n.name as check_name, d1.name as disease_name
+                        """.format(disease))
+                else:
+                    sql = self.sql_transfer(question_type, entity_dict.get('disease'))
 
             elif question_type == 'check_disease':
                 sql = self.sql_transfer(question_type, entity_dict.get('check'))
@@ -91,25 +106,34 @@ class QuestionPaser:
 
             if sql:
                 sql_['sql'] = sql
-
                 sqls.append(sql_)
 
         return sqls
 
     '''针对不同的问题，分开进行处理'''
     def sql_transfer(self, question_type, entities, entity_dict=None):
+        # 1. 必须要有词条
         if not entities:
             return []
 
-        # 查询语句
-        sql = []
+        # 2. 类型 -> [词条, 词条, …]
         if entity_dict is None:
             entity_dict = {}
-        # 查询疾病的原因
+
+        # 3. 构造查询语句
+        sql = []
+
+        # 4. 成因
+        # 1. 限定节点类型: MATCH (m:Disease) 
+        # 2. 指定节点属性: where m.name = '{词条}' 
+        # 3. 返回属性: return m.name, m.cause
         if question_type == 'disease_cause':
             sql = ["MATCH (m:Disease) where m.name = '{0}' return m.name, m.cause".format(i) for i in entities]
 
-        # 查询疾病的防御措施
+        # 5. 预防
+        # 1. 限定节点类型: MATCH (m:Disease) 
+        # 2. 指定节点属性: where m.name = '{词条}' 
+        # 3. 返回属性: return m.name, m.prevent
         elif question_type == 'disease_prevent':
             sql = ["MATCH (m:Disease) where m.name = '{0}' return m.name, m.prevent".format(i) for i in entities]
 
@@ -133,7 +157,12 @@ class QuestionPaser:
         elif question_type == 'disease_desc':
             sql = ["MATCH (m:Disease) where m.name = '{0}' return m.name, m.desc".format(i) for i in entities]
 
-        # 查询疾病有哪些症状
+        # 6. 症状
+        # 1. 限定根节点类型: MATCH (m:Disease)
+        # 2. 限定关系类型: -[r:has_symptom]->
+        # 3. 限定相邻节点类型: (n:Symptom) 
+        # 4. 指定根节点属性: where m.name = '{词条}' 
+        # 5. 返回: return m.name, r.name, n.name
         elif question_type == 'disease_symptom':
             sql = ["MATCH (m:Disease)-[r:has_symptom]->(n:Symptom) where m.name = '{0}' return m.name, r.name, n.name".format(i) for i in entities]
 
@@ -146,6 +175,7 @@ class QuestionPaser:
             sql1 = ["MATCH (m:Disease)-[r:acompany_with]->(n:Disease) where m.name = '{0}' return m.name, r.name, n.name".format(i) for i in entities]
             sql2 = ["MATCH (m:Disease)-[r:acompany_with]->(n:Disease) where n.name = '{0}' return m.name, r.name, n.name".format(i) for i in entities]
             sql = sql1 + sql2
+        
         # 查询疾病的忌口
         elif question_type == 'disease_not_food':
             # 如果同时有疾病和食物
@@ -211,6 +241,7 @@ class QuestionPaser:
             sql1 = ["MATCH (m:Disease)-[r:common_drug]->(n:Drug) where n.name = '{0}' return m.name, r.name, n.name".format(i) for i in entities]
             sql2 = ["MATCH (m:Disease)-[r:recommand_drug]->(n:Drug) where n.name = '{0}' return m.name, r.name, n.name".format(i) for i in entities]
             sql = sql1 + sql2
+        
         # 查询疾病应该进行的检查
         elif question_type == 'disease_check':
             sql = ["MATCH (m:Disease)-[r:need_check]->(n:Check) where m.name = '{0}' return m.name, r.name, n.name".format(i) for i in entities]
