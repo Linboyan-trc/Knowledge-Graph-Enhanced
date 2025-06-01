@@ -85,6 +85,10 @@ class QuestionPaser:
             elif question_type == 'drug_producer':
                 sql = self.sql_transfer(question_type, entity_dict.get('drug'))
 
+            # 4.3 question3: 能否吃某类食物
+            elif question_type == 'can_eat_specific_food':
+                sql = self.sql_transfer(question_type, entity_dict.get('disease'), entity_dict.get('food'))
+
             if sql:
                 sql_['sql'] = sql
 
@@ -93,7 +97,7 @@ class QuestionPaser:
         # 5. 返回查询语句
         return sqls
 
-    def sql_transfer(self, question_type, entities):
+    def sql_transfer(self, question_type, entities, vice_entities=None):
         # 1. 必须要有词条
         if not entities:
             return []
@@ -195,6 +199,10 @@ class QuestionPaser:
         # 7.2 question2: 查询药品的生产商
         elif question_type == 'drug_producer':
             sql = ["MATCH (m:Drug)<-[r:drugs_of]-(n:Producer) where m.name = '{0}' return distinct m.name as drug_name, n.name as producer_name".format(i) for i in entities]
+
+        # 7.3 question3: 能否吃某类食物
+        elif question_type == 'can_eat_specific_food':
+            sql = ["MATCH (m:Disease)-[r:no_eat]->(f:Food) where m.name = '{0}' and f.name = '{1}' return count(*) as cnt".format(i, j)for i in entities for j in vice_entities]
 
         return sql
 

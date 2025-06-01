@@ -56,6 +56,8 @@ class QuestionClassifier:
         # 4.4 
         # 4.4.2 question2: 新增生产商相关的问题词
         self.producer_qwds = ['生产商', '生产企业', '生产厂家', '药企', '制造商', '产商', '厂商', '哪里产的', '谁生产的', '哪个公司']
+        # 4.4.3 question3: 新增能否吃某类食物
+        self.can_eat_specific_food = ['能否吃']
 
         # 5. 返回
         print('model init finished ......')
@@ -167,6 +169,11 @@ class QuestionClassifier:
         if self.check_words(self.producer_qwds, question) and 'drug' in types:
             question_type = 'drug_producer'
             question_types.append(question_type)
+
+        # 5.3 question3: 能否吃某类食物，直接赋值question_types以清除之前的question_types
+        if self.check_words(self.can_eat_specific_food, question) and 'food' in types and 'disease' in types:
+            question_type = 'can_eat_specific_food'
+            question_types = [question_type]
 
         # 若没有查到相关的外部查询信息，那么则将该疾病的描述信息返回
         if question_types == [] and 'disease' in types:

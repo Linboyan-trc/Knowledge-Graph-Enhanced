@@ -147,6 +147,13 @@ class AnswerSearcher:
             # 1.2.3 返回单个问题类型的回答
             final_answer = '{0}的生产商包括：{1}'.format(drug, '；'.join(list(set(producers))[:self.num_limit]))
 
+        # 1.3 question3: 能否吃某类食物
+        elif question_type == 'can_eat_specific_food':
+            if answers[0]['cnt'] == 0:
+                final_answer = "可以吃"
+            else:
+                final_answer = "不可以吃"
+
         return final_answer
 
 
