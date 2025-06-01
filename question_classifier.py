@@ -64,6 +64,8 @@ class QuestionClassifier:
         self.two_drugs_producers_compare = ['哪个的生产商数量更多']
         # 4.4.6 question6: 指定人群检查
         self.specific_people_check = ['是否得了易感的疾病']
+        # 4.4.7 question7: 指定人群避免
+        self.specific_people_prevent = ['预防措施以避免']
 
         # 5. 返回
         print('model init finished ......')
@@ -73,7 +75,7 @@ class QuestionClassifier:
         # 1. 获取{词条 -> 类型}，一定能获取到词条
         data = {}
         medical_dict = self.check_medical(question)
-        if not medical_dict:
+        if (not medical_dict) and ('预防措施以避免' not in question):
             return {}
         
         # 2. {词条 -> 类型}注入
@@ -194,6 +196,11 @@ class QuestionClassifier:
         # 5.6 question6: 指定人群检查
         if self.check_words(self.specific_people_check, question) and 'disease' in types:
             question_type = 'specific_people_check'
+            question_types = [question_type]
+
+        # 5.7 question7: 指定人群避免
+        if self.check_words(self.specific_people_prevent, question):
+            question_type = 'specific_people_prevent'
             question_types = [question_type]
 
         # 若没有查到相关的外部查询信息，那么则将该疾病的描述信息返回

@@ -101,6 +101,10 @@ class QuestionPaser:
             elif question_type == 'specific_people_check':
                 sql = self.sql_transfer(question_type, entity_dict.get('disease'))
 
+            # 4.7 question7: 指定人群避免
+            elif question_type == 'specific_people_prevent':
+                sql = self.sql_transfer(question_type, None)
+
             if sql:
                 sql_['sql'] = sql
 
@@ -111,7 +115,7 @@ class QuestionPaser:
 
     def sql_transfer(self, question_type, entities, vice_entities=None):
         # 1. 必须要有词条
-        if not entities:
+        if (not entities) and (question_type != 'specific_people_prevent'):
             return []
 
         # 2. 构造一个问题类型对应的多条查询语句
@@ -227,6 +231,10 @@ class QuestionPaser:
         # 7.6 question6: 指定人群检查
         elif question_type == 'specific_people_check':
             sql = ["MATCH (m:Disease)-[r:need_check]->(c:Check) where m.easy_get contains '{0}' return distinct m.name as disease_name, c.name as check_name".format(i) for i in entities]
+
+        # 7.7 question7: 指定人群避免
+        elif question_type == 'specific_people_prevent':
+            sql = ["MATCH (m:Disease) where m.easy_get contains '7岁儿童' or m.easy_get contains '10岁以下儿童' or m.easy_get contains '-8岁儿童' or m.easy_get contains '至15岁儿童' return distinct m.name as disease_name, m.easy_get as easy_get, m.prevent as prevent_name"]
 
         return sql
 

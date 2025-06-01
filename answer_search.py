@@ -197,6 +197,14 @@ class AnswerSearcher:
                 lines.append("{0}：{1}".format(disease, '、'.join(checks)))
             final_answer = "该人群易感的疾病及建议检查如下：\n" + "\n".join(lines)
 
+        # 1.7 question7: 指定人群避免
+        elif question_type == 'specific_people_prevent':
+            lines = []
+            for a in answers:
+                disease = a['disease_name']
+                prevent = a['prevent_name']
+                lines.append("{0}：\n{1}\n".format(disease, prevent))
+            final_answer = "针对一名7岁儿童，易感疾病及预防建议如下：\n{0}".format("\n".join(lines))
 
         return final_answer
 
