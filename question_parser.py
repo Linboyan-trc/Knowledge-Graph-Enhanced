@@ -109,6 +109,10 @@ class QuestionPaser:
             elif question_type == 'specific_people_prevent_2':
                 sql = self.sql_transfer(question_type, entity_dict.get('disease'))
 
+            # 4.9 question9: 生成商还会生产
+            elif question_type == 'produer_other_drugs':
+                sql = self.sql_transfer(question_type, entity_dict.get('drug'))
+
             if sql:
                 sql_['sql'] = sql
 
@@ -243,6 +247,10 @@ class QuestionPaser:
         # 7.8 question8: 指定人群避免
         elif question_type == 'specific_people_prevent_2':
             sql = ["MATCH (m:Disease) where m.easy_get contains '{0}' return distinct m.name as disease_name, m.prevent as prevent_name".format(i) for i in entities]
+
+        # 7.9 question9: 生成商还会生产
+        elif question_type == 'produer_other_drugs':
+            sql = ["MATCH (d1:Drug)<-[:drugs_of]-(p:Producer)-[:drugs_of]->(d2:Drug) WHERE d1.name = '{0}' AND d2.name <> '{0}' RETURN DISTINCT d1.name as d1_name, p.name as producer_name, d2.name as d2_name".format(i) for i in entities]
 
         return sql
 

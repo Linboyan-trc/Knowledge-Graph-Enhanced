@@ -68,6 +68,8 @@ class QuestionClassifier:
         self.specific_people_prevent = ['儿童需要做哪些预防措施以避免']
         # 4.4.8 question8: 指定人群避免
         self.specific_people_prevent_2 = ['高度近视人群应当做哪些预防措施以避免']
+        # 4.4.9 question9: 生成商还会生产
+        self.produer_other_drugs = ['生产商还会生产']
 
         # 5. 返回
         print('model init finished ......')
@@ -208,6 +210,11 @@ class QuestionClassifier:
         # 5.8 question8: 指定人群避免
         if self.check_words(self.specific_people_prevent_2, question) and 'disease' in types:
             question_type = 'specific_people_prevent_2'
+            question_types = [question_type]
+
+        # 5.9 question9: 生成商还会生产
+        if self.check_words(self.produer_other_drugs, question) and 'drug' in types:
+            question_type = 'produer_other_drugs'
             question_types = [question_type]
 
         # 若没有查到相关的外部查询信息，那么则将该疾病的描述信息返回

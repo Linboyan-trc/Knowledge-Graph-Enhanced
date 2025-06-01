@@ -215,6 +215,13 @@ class AnswerSearcher:
                 lines.append("{0}：\n{1}\n".format(disease, prevent))
             final_answer = "该人群易感疾病及预防建议如下：\n{0}".format("\n".join(lines))
 
+        # 1.9 question9: 生成商还会生产
+        elif question_type == 'produer_other_drugs':
+            lines = []
+            for a in answers:
+                lines.append("{0}还生产{1}".format(a['producer_name'],a['d2_name']))
+            final_answer = "{0}的生产商{1}".format(answers[0]['d1_name'], "".join(lines))
+
         return final_answer
 
 
