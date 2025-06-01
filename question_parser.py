@@ -97,6 +97,10 @@ class QuestionPaser:
             elif question_type == 'two_drugs_producers_compare':
                 sql = self.sql_transfer(question_type, entity_dict.get('drug'))
 
+            # 4.6 question6: 指定人群检查
+            elif question_type == 'specific_people_check':
+                sql = self.sql_transfer(question_type, entity_dict.get('disease'))
+
             if sql:
                 sql_['sql'] = sql
 
@@ -219,6 +223,10 @@ class QuestionPaser:
         # 7.5 question5: 两种药生厂商数量比较
         elif question_type == 'two_drugs_producers_compare':
             sql = ["MATCH (m:Drug)<-[r:drugs_of]-(n:Producer) where m.name = '{0}' return m.name as drug_name, count(distinct n.name) as cnt".format(i) for i in entities]
+
+        # 7.6 question6: 指定人群检查
+        elif question_type == 'specific_people_check':
+            sql = ["MATCH (m:Disease)-[r:need_check]->(c:Check) where m.easy_get contains '{0}' return distinct m.name as disease_name, c.name as check_name".format(i) for i in entities]
 
         return sql
 

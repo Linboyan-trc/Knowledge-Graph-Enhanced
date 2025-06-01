@@ -180,6 +180,24 @@ class AnswerSearcher:
             else:
                 final_answer = "{0}的生产商数量为{1}家，{2}的生产商数量为{3}家，所以{0}的生产商数量更多".format(drug1, cnt1, drug2, cnt2)
 
+        # 1.6 question6: 指定人群检查
+        elif question_type == 'specific_people_check':
+            # 1. 结果字典
+            disease_checks = {}
+
+            # 2. answers转字典
+            for i in answers:
+                disease = i['disease_name']
+                check = i['check_name']
+                disease_checks.setdefault(disease, set()).add(check)
+
+            # 3. 对于此问题类型的最终回答
+            lines = []
+            for disease, checks in disease_checks.items():
+                lines.append("{0}：{1}".format(disease, '、'.join(checks)))
+            final_answer = "该人群易感的疾病及建议检查如下：\n" + "\n".join(lines)
+
+
         return final_answer
 
 
