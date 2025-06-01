@@ -89,6 +89,10 @@ class QuestionPaser:
             elif question_type == 'can_eat_specific_food':
                 sql = self.sql_transfer(question_type, entity_dict.get('disease'), entity_dict.get('food'))
 
+            # 4.4 question4: 两种食物比较
+            elif question_type == 'disease_kinds_of_food_compare':
+                sql = self.sql_transfer(question_type, entity_dict.get('food'))
+
             if sql:
                 sql_['sql'] = sql
 
@@ -203,6 +207,10 @@ class QuestionPaser:
         # 7.3 question3: 能否吃某类食物
         elif question_type == 'can_eat_specific_food':
             sql = ["MATCH (m:Disease)-[r:no_eat]->(f:Food) where m.name = '{0}' and f.name = '{1}' return count(*) as cnt".format(i, j)for i in entities for j in vice_entities]
+
+        # 7.4 question4: 两种食物比较
+        elif question_type == 'disease_kinds_of_food_compare':
+            sql = ["MATCH (m:Disease)-[r:no_eat]->(f:Food) where f.name = '{0}' return f.name as food_name, count(distinct m.name) as cnt".format(i) for i in entities]
 
         return sql
 

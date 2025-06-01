@@ -154,6 +154,19 @@ class AnswerSearcher:
             else:
                 final_answer = "不可以吃"
 
+        # 1.4 question4: 两种食物比较
+        elif question_type == 'disease_kinds_of_food_compare':
+            food1 = answers[0]['food_name']
+            cnt1 = answers[0]['cnt']
+            food2 = answers[1]['food_name']
+            cnt2 = answers[1]['cnt']
+            if cnt1 < cnt2:
+                final_answer = "需要忌吃{0}的病有{1}种，需要忌吃{2}的病有{3}种，所以需要忌吃{2}的病多".format(food1, cnt1, food2, cnt2)
+            elif cnt1 == cnt2:
+                final_answer = "需要忌吃{0}的病有{1}种，需要忌吃{2}的病有{3}种，两者一样多".format(food1, cnt1, food2, cnt2)
+            else:
+                final_answer = "需要忌吃{0}的病有{1}种，需要忌吃{2}的病有{3}种，所以需要忌吃{0}的病多".format(food1, cnt1, food2, cnt2)
+
         return final_answer
 
 
