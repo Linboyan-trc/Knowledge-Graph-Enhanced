@@ -105,6 +105,10 @@ class QuestionPaser:
             elif question_type == 'specific_people_prevent':
                 sql = self.sql_transfer(question_type, None)
 
+            # 4.8 question8: 指定人群避免
+            elif question_type == 'specific_people_prevent_2':
+                sql = self.sql_transfer(question_type, entity_dict.get('disease'))
+
             if sql:
                 sql_['sql'] = sql
 
@@ -235,6 +239,10 @@ class QuestionPaser:
         # 7.7 question7: 指定人群避免
         elif question_type == 'specific_people_prevent':
             sql = ["MATCH (m:Disease) where m.easy_get contains '7岁儿童' or m.easy_get contains '10岁以下儿童' or m.easy_get contains '-8岁儿童' or m.easy_get contains '至15岁儿童' return distinct m.name as disease_name, m.easy_get as easy_get, m.prevent as prevent_name"]
+
+        # 7.8 question8: 指定人群避免
+        elif question_type == 'specific_people_prevent_2':
+            sql = ["MATCH (m:Disease) where m.easy_get contains '{0}' return distinct m.name as disease_name, m.prevent as prevent_name".format(i) for i in entities]
 
         return sql
 

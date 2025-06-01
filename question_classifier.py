@@ -65,7 +65,9 @@ class QuestionClassifier:
         # 4.4.6 question6: 指定人群检查
         self.specific_people_check = ['是否得了易感的疾病']
         # 4.4.7 question7: 指定人群避免
-        self.specific_people_prevent = ['预防措施以避免']
+        self.specific_people_prevent = ['儿童需要做哪些预防措施以避免']
+        # 4.4.8 question8: 指定人群避免
+        self.specific_people_prevent_2 = ['高度近视人群应当做哪些预防措施以避免']
 
         # 5. 返回
         print('model init finished ......')
@@ -201,6 +203,11 @@ class QuestionClassifier:
         # 5.7 question7: 指定人群避免
         if self.check_words(self.specific_people_prevent, question):
             question_type = 'specific_people_prevent'
+            question_types = [question_type]
+
+        # 5.8 question8: 指定人群避免
+        if self.check_words(self.specific_people_prevent_2, question) and 'disease' in types:
+            question_type = 'specific_people_prevent_2'
             question_types = [question_type]
 
         # 若没有查到相关的外部查询信息，那么则将该疾病的描述信息返回
