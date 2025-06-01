@@ -36,7 +36,7 @@
     - 运行脚本, 将数据导入进数据库:`python build_medicalgraph.py`
 - 启动项目:
     - 运行脚本, 进入命令行交互, 开始问答: `python chatbot_graph.py`:
-
+      <img src="cli.png" alt="命令行交互示例" style="width:80%;">
 ### 3. 代码修改
 #### 3.1 新增一个问题种类，需要修改5处代码:
 - `question_classifier.py`:
