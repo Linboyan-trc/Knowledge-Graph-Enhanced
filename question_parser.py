@@ -113,6 +113,10 @@ class QuestionPaser:
             elif question_type == 'produer_other_drugs':
                 sql = self.sql_transfer(question_type, entity_dict.get('drug'))
 
+            # 5.10 question10: 并发症属于哪个科室
+            elif question_type == 'accompany_department':
+                sql = self.sql_transfer(question_type, entity_dict.get('disease'))
+
             if sql:
                 sql_['sql'] = sql
 
@@ -251,6 +255,10 @@ class QuestionPaser:
         # 7.9 question9: 生成商还会生产
         elif question_type == 'produer_other_drugs':
             sql = ["MATCH (d1:Drug)<-[:drugs_of]-(p:Producer)-[:drugs_of]->(d2:Drug) WHERE d1.name = '{0}' AND d2.name <> '{0}' RETURN DISTINCT d1.name as d1_name, p.name as producer_name, d2.name as d2_name".format(i) for i in entities]
+
+        # 7.10 question10: 并发症属于哪个科室
+        elif question_type == 'accompany_department':
+            sql = ["MATCH (m:Disease)-[r:acompany_with]->(n:Disease)-[s:belongs_to]->(d:Department) where m.name = '{0}' return distinct m.name as d1_name, n.name as d2_name, d.name as department_name".format(i) for i in entities]
 
         return sql
 

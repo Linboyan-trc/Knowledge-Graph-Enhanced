@@ -222,6 +222,16 @@ class AnswerSearcher:
                 lines.append("{0}还生产{1}".format(a['producer_name'],a['d2_name']))
             final_answer = "{0}的生产商{1}".format(answers[0]['d1_name'], "".join(lines))
 
+        # 1.10 question10: 并发症属于哪个科室
+        elif question_type == 'accompany_department':
+            d1 = answers[0]['d1_name']
+            lines = []
+            for a in answers:
+                d2 = a['d2_name']
+                dept = a['department_name']
+                lines.append("{0}：{1}".format(d2, dept))
+            final_answer = '{0}的并发症及所属科室如下：{1}'.format(d1, "".join(lines))
+
         return final_answer
 
 
