@@ -167,6 +167,19 @@ class AnswerSearcher:
             else:
                 final_answer = "需要忌吃{0}的病有{1}种，需要忌吃{2}的病有{3}种，所以需要忌吃{0}的病多".format(food1, cnt1, food2, cnt2)
 
+        # 1.5 question5: 两种药生厂商数量比较
+        elif question_type == 'two_drugs_producers_compare':
+            drug1 =  answers[0]['drug_name']
+            cnt1 = answers[0]['cnt']
+            drug2 =  answers[1]['drug_name']
+            cnt2 = answers[1]['cnt']
+            if cnt1 < cnt2:
+                final_answer = "{0}的生产商数量为{1}家，{2}的生产商数量为{3}家，所以{2}的生产商数量更多".format(drug1, cnt1, drug2, cnt2)
+            elif cnt1 == cnt2:
+                final_answer = "{0}的生产商数量为{1}家，{2}的生产商数量为{3}家，两者一样多".format(drug1, cnt1, drug2, cnt2)
+            else:
+                final_answer = "{0}的生产商数量为{1}家，{2}的生产商数量为{3}家，所以{0}的生产商数量更多".format(drug1, cnt1, drug2, cnt2)
+
         return final_answer
 
 

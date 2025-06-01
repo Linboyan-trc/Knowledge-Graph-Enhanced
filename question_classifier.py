@@ -60,6 +60,8 @@ class QuestionClassifier:
         self.can_eat_specific_food = ['能否吃']
         # 4.4.4 question4: 两种食物比较
         self.disease_kinds_of_food_compare = ['还是']
+        # 4.4.5 question5: 两种药生厂商数量比较
+        self.two_drugs_producers_compare = ['哪个的生产商数量更多']
 
         # 5. 返回
         print('model init finished ......')
@@ -180,6 +182,11 @@ class QuestionClassifier:
         # 5.4 question4: 两种食物比较
         if self.check_words(self.disease_kinds_of_food_compare, question) and 'food' in types:
             question_type = 'disease_kinds_of_food_compare'
+            question_types = [question_type]
+
+        # 5.5 question5: 两种药生厂商数量比较
+        if self.check_words(self.two_drugs_producers_compare, question) and 'drug' in types:
+            question_type = 'two_drugs_producers_compare'
             question_types = [question_type]
 
         # 若没有查到相关的外部查询信息，那么则将该疾病的描述信息返回
